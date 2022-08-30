@@ -6,9 +6,10 @@
 </head>
 <body>
 <div id="app"></div>
-<script src="../../../../node_modules/@vue/reactivity/dist/reactivity.global.js"></script>
+<!--<script src="../../../../node_modules/@vue/reactivity/dist/reactivity.global.js"></script>-->
+<script src="https://unpkg.com/vue@3"></script>
 <script>
-    const {effect, reactive, shallowReactive, readonly, shallowReadonly} = VueReactivity
+    const {effect, reactive, shallowReactive, readonly, shallowReadonly} = Vue // VueReactivity
 
     // shallowReadonly会创建原始对象浅的代理对象,核心依赖Proxy,深层次对象不会创建代理
     const state = shallowReadonly({
