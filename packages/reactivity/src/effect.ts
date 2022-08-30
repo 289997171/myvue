@@ -35,7 +35,8 @@ class ReactiveEffect {
                 this.parentEF = null;
 
 
-                this.needCollect = false;
+                // TODO 由于嵌套执行依赖 collectingEffect,而collectingEffect依赖属性收集,故这里不能取消属性收集!
+                // this.needCollect = false;
             }
 
         }
@@ -130,7 +131,24 @@ const trigger = (target, type, p, newValue, oldValue) => {
     if (efs) {
         console.log('trigger...', p)
         efs.forEach(effect => {
-            effect.run()
+
+            // 考虑嵌套循环,执行effect.run可能是effect本身
+            /*
+                参见: test71.html
+                effect(()=> {
+                    console.log('effect...')
+
+                    // TODO effect中修改收到的的属性值,将导致嵌套循环!!!
+                    // set 导致 effect
+                    // effect 导致 set
+                    // ...嵌套循环
+                    state.age++
+
+                    document.getElementById('app').innerHTML = `${state.name} 今年 ${state.age} 岁`
+                })
+            */
+            if (effect == collectingEffect) console.warn('effect中修改收到的的属性值,忽略触发,直接在当前渲染函数就能生效!')
+            else effect.run()
         })
     }
 }
