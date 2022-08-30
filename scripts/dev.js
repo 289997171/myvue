@@ -35,10 +35,10 @@ esbuild.build({
     watch: {
         // 监听文件变化,执行重新打包
         onRebuild(error) {
-            if (!error) console.log(`esbuild rebuild...`)
+            if (!error) console.log(`esbuild rebuild...`, new Date())
         }
     }
 
 }).then(() => {
-    console.log('esbuild watching...')
+    console.log('esbuild watching...', new Date())
 })
