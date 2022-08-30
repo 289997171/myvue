@@ -1,5 +1,8 @@
 import {isObject} from "@vue/shared";
 
+// 获得当前正在进行依赖收集的effect
+import {track} from './effect'
+
 const enum ReactiveFlag {
     IS_REACTIVE = '__v_isReactive'
 }
@@ -31,6 +34,10 @@ const reactive = (target)=> {
             //return target[p]
             // 为代理对象添加标志
             if (p === ReactiveFlag.IS_REACTIVE) return true
+
+            // 进行依赖收集
+            track(target, 'get', p)
+
             return Reflect.get(target, p, receiver);
         },
         set(target: any, p: string | symbol, value: any, receiver: any): boolean {
