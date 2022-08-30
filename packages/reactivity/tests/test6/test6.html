@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>test5.html</title>
+    <title>test6.html</title>
 </head>
 <body>
-<script src="./reactivity.global.js"></script>
+<script src="../../dist/reactivity.global.js"></script>
 <script>
 
     const {reactive} = VueReactivity
@@ -26,7 +26,7 @@
     // 同一个对象重复代理
     const playerProxy2 = reactive(player)
 
-    // 代理对象是一个对立对象
+    // 代理对象是一个代理对象
     const playerProxy3 = reactive(playerProxy)
 
     console.log(playerProxy === playerProxy2)

@@ -39,18 +39,20 @@ var VueReactivity = (() => {
     if (target["__v_isReactive" /* IS_REACTIVE */])
       return target;
     let proxy = reactiveMap.get(target);
-    if (proxy)
+    console.log("proxy", proxy);
+    if (proxy) {
+      console.log("\u5BF9\u8C61\u5DF2\u4EE3\u7406....");
       return proxy;
+    }
     proxy = new Proxy(target, {
       get(target2, p, receiver) {
-        if (p === "__v_isReactive" /* IS_REACTIVE */)
-          return true;
         return Reflect.get(target2, p, receiver);
       },
       set(target2, p, value, receiver) {
         return Reflect.set(target2, p, value, receiver);
       }
     });
+    proxy["__v_isReactive" /* IS_REACTIVE */] = true;
     reactiveMap.set(target, proxy);
     return proxy;
   };
