@@ -1,5 +1,4 @@
 import {isObject} from "@vue/shared"
 
-const a = {}
-
-isObject(a)
+console.log(isObject({}))
+console.log(isObject(true))

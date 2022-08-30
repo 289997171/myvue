@@ -5,7 +5,7 @@
   };
 
   // packages/reactivity/src/index.ts
-  var a = {};
-  isObject(a);
+  console.log(isObject({}));
+  console.log(isObject(true));
 })();
 //# sourceMappingURL=reactivity.global.js.map

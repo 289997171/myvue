@@ -1,7 +1,7 @@
 {
   "version": 3,
   "sources": ["../../shared/src/index.ts", "../src/index.ts"],
-  "sourcesContent": ["export const isObject = (val)=> {\r\n    return val !== null && typeof val === 'object'\r\n}\r\n", "import {isObject} from \"@vue/shared\"\r\n\r\nconst a = {}\r\n\r\nisObject(a)\r\n"],
-  "mappings": ";;AAAO,MAAM,WAAW,CAAC,QAAO;AAC5B,WAAO,QAAQ,QAAQ,OAAO,QAAQ;AAAA,EAC1C;;;ACAA,MAAM,IAAI,CAAC;AAEX,WAAS,CAAC;",
+  "sourcesContent": ["export const isObject = (val)=> {\r\n    return val !== null && typeof val === 'object'\r\n}\r\n", "import {isObject} from \"@vue/shared\"\r\n\r\nconsole.log(isObject({}))\r\nconsole.log(isObject(true))\r\n"],
+  "mappings": ";;AAAO,MAAM,WAAW,CAAC,QAAO;AAC5B,WAAO,QAAQ,QAAQ,OAAO,QAAQ;AAAA,EAC1C;;;ACAA,UAAQ,IAAI,SAAS,CAAC,CAAC,CAAC;AACxB,UAAQ,IAAI,SAAS,IAAI,CAAC;",
   "names": []
 }
