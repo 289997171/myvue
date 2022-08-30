@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test4.html</title>
+</head>
+<body>
+<script src="./reactivity.global.js"></script>
+<script>
+
+    const {reactive} = VueReactivity
+
+    const player = {
+        name: 'jack',
+        age: 20,
+        get alias() {
+            return this.age
+        },
+        set alias(val) {
+            this.age = val;
+        }
+    }
+
+    const playerProxy = reactive(player)
+
+    playerProxy.alias++;
+
+    console.log(player.age)
+    console.log(player.alias)
+
+</script>
+</body>
+</html>
