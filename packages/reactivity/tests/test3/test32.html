@@ -10,24 +10,28 @@
         name: 'jack',
         age: 20,
         get alias() {
-            //console.log('get alias')
             return this.age
         },
         set alias(val) {
-            //console.log('set alias')
-            this.age = val;
+          this.age = val;
         }
     }
 
     const playerProxy = new Proxy(player, {
         get(target, p, receiver) {
             console.log('通过代理获取数据', p)
-            return player[p]
+            // return player[p]
+
+            // 使用反射
+            return Reflect.get(target, p, receiver)
         },
         set(target, p, value, receiver) {
             console.log('通过代理设置数据', p, value)
-            target[p] = value
-            return true;
+            // target[p] = value
+            // return true;
+
+            // 使用反射
+            return Reflect.set(target, p, value)
         }
     })
 
