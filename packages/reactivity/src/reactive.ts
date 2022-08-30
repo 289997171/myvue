@@ -1,8 +1,11 @@
 import {isObject} from "@vue/shared";
 
-
-// 保存以及原始对象与代理对象隐射
-const reactiveMap = new WeakMap() // key只能是对象,如果key指向的对象后面赋值为null,那么WeakMap会自动删除,垃圾回收相关
+// const enum ReactiveFlag {
+//     IS_REACTIVE = '__v_isReactive'
+// }
+//
+// // 保存以及原始对象与代理对象隐射
+// const reactiveMap = new WeakMap() // key只能是对象,如果key指向的对象后面赋值为null,那么WeakMap会自动删除,垃圾回收相关
 
 /**
  * 将js原始对象,依赖Proxy转换成响应式数据
@@ -16,11 +19,14 @@ const reactive = (target)=> {
         return
     }
 
-    let proxy = reactiveMap.get(target)
-    // 判断原始对象是否已经创建过对应的代理对象
-    if (proxy) return proxy;
+    // // 如果target是一个代理对象Proxy,直接返回
+    // if (target[ReactiveFlag.IS_REACTIVE]) return target;
+    //
+    // let proxy = reactiveMap.get(target)
+    // // 判断原始对象是否已经创建过对应的代理对象
+    // if (proxy) return proxy;
 
-    proxy = new Proxy(target, {
+    const proxy = new Proxy(target, {
         get(target: any, p: string | symbol, receiver: any): any {
             //return target[p]
             return Reflect.get(target, p, receiver);

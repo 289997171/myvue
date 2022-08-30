@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test5.html</title>
+</head>
+<body>
+<script src="../test4/reactivity.global.js"></script>
+<script>
+
+    const {reactive} = VueReactivity
+
+    const player = {
+        name: 'jack',
+        age: 20,
+        get alias() {
+            return this.age
+        },
+        set alias(val) {
+            this.age = val;
+        }
+    }
+
+    const playerProxy = reactive(player)
+
+    // 同一个对象重复代理
+    const playerProxy2 = reactive(player)
+
+    // 代理对象是一个对立对象
+    const playerProxy3 = reactive(playerProxy)
+
+    console.log(playerProxy === playerProxy2)
+    console.log(playerProxy === playerProxy3)
+</script>
+</body>
+</html>
