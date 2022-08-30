@@ -10,7 +10,7 @@
 <script>
     const {effect, reactive, shallowReactive} = VueReactivity
 
-    // reactive会创建原始对象的代理对象,核心依赖Proxy
+    // shallowReactive会创建原始对象的代理对象,核心依赖Proxy,但是浅层次的,深层次的对象不会创建代理对象Proxy
     const state = shallowReactive({
         name: 'vicky',
         age:30,

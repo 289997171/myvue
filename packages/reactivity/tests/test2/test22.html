@@ -8,10 +8,10 @@
 <div id="app"></div>
 <script src="../../../../node_modules/@vue/reactivity/dist/reactivity.global.js"></script>
 <script>
-    const {effect, reactive} = VueReactivity
+    const {effect, reactive, shallowReactive, readonly} = VueReactivity
 
-    // reactive会创建原始对象的代理对象,核心依赖Proxy,深层次的,深层次的对象也会创建对应的代理对象Proxy
-    const state = reactive({
+    // readonly会创建原始对象的代理对象,核心依赖Proxy,但是修改数据会提示警告!
+    const state = readonly({
         name: 'vicky',
         age:30,
         skill: {
@@ -35,16 +35,11 @@
     })
 
     setTimeout(()=> {
-        // 响应式数据修改,会触发effect再次执行
+        // 修改readonly会提示警告
         state.age++
+        // 并且数据也不会被修改!
+        console.log("state.age",state.age)
     }, 3000)
-
-    setTimeout(()=> {
-        // 响应式数据修改,没触发effect再次执行,原因是effect会收集响应式数据依赖,
-        // 由于渲染中没有state.skill读取,所以effect不会手机skill及以下的依赖.
-        // 故即便响应式数据修改了,也不会触发effect执行
-        state.skill.cc.level++
-    }, 5000)
 </script>
 </body>
 </html>
