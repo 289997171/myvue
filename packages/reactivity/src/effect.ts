@@ -33,6 +33,9 @@ class ReactiveEffect {
             } finally {
                 collectingEffect = this.parentEF;
                 this.parentEF = null;
+
+
+                this.needCollect = false;
             }
 
         }
@@ -76,7 +79,7 @@ const track = (target, type, p) => {
         return;
     }
 
-    let depsMap =  targetP_EFs.get(target)
+    let depsMap = targetP_EFs.get(target)
     if (!depsMap) {
         // k:属性名 v:Set
         targetP_EFs.set(target, depsMap = new Map())
@@ -88,13 +91,12 @@ const track = (target, type, p) => {
     }
 
     if (!dep.has(collectingEffect)) {
+        console.log('track...', p)
         // 双向关联,多对多
         dep.add(collectingEffect) // 注意collectingEffect之后改变不会影响dep里面的值!!!
         collectingEffect.deps.push(dep) // 让effect记录对应的dep,在之后清理的时候会用到
     }
 }
-
-export {effect, track}
 
 
 /*
@@ -118,3 +120,20 @@ effect(()=> {
     flag ? proxy.xxx : proxy.yyy
 })
 */
+
+
+const trigger = (target, type, p, newValue, oldValue) => {
+    const pEFs = targetP_EFs.get(target)
+    if (!pEFs) return; // 触发的值,没有对应的effects
+
+    const efs = pEFs.get(p)
+    if (efs) {
+        console.log('trigger...', p)
+        efs.forEach(effect => {
+            effect.run()
+        })
+    }
+}
+
+
+export {effect, track, trigger}

@@ -1,7 +1,7 @@
 import {isObject} from "@vue/shared";
 
 // 获得当前正在进行依赖收集的effect
-import {track} from './effect'
+import {track, trigger} from './effect'
 
 const enum ReactiveFlag {
     IS_REACTIVE = '__v_isReactive'
@@ -43,7 +43,17 @@ const reactive = (target)=> {
         set(target: any, p: string | symbol, value: any, receiver: any): boolean {
             // target[p] = value;
             // return true;
-            return Reflect.set(target, p, value, receiver)
+
+            let result = false;
+
+            // 触发属性导致effect渲染
+            const oldValue = target[p]
+            if (oldValue !== value) {
+                result = Reflect.set(target, p, value, receiver)
+                trigger(target, 'set', p, value, oldValue)
+            }
+
+            return result;
         }
     })
 
