@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test2.html</title>
+</head>
+<body>
+<div id="app"></div>
+<script src="../../../../node_modules/@vue/reactivity/dist/reactivity.global.js"></script>
+<script>
+    const {effect, reactive} = VueReactivity
+
+    // reactive会创建原始对象的代理对象,核心依赖Proxy
+    const state = reactive({
+        name: 'vicky',
+        age:30,
+        skill: {
+            java: {
+                level: 10
+            },
+            cc: {
+                level: 9
+            }
+        }
+    })
+
+    console.log(state) // Proxy
+    console.log(state.skill) // Proxy
+    console.log(state.skill.java) // Proxy
+
+    // effect函数默认会先执行一次,每当其包含的响应式数据修改后,会触发effect再次执行.这也是vue响应式的核心概念
+    effect(()=> {
+        console.log('effect...')
+        document.getElementById('app').innerHTML = `${state.name} 今年 ${state.age} 岁`
+    })
+
+    setTimeout(()=> {
+        // 响应式数据修改,会触发effect再次执行
+        state.age++
+    }, 3000)
+</script>
+</body>
+</html>
