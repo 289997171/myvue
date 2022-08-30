@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test3.html</title>
+</head>
+<body>
+<script>
+    const player = {
+        name: 'jack',
+        age: 20,
+        get alias() {
+            return this.age
+        }
+    }
+
+    const playerProxy = new Proxy(player, {
+        get(target, p, receiver) {
+            console.log('通过代理获取数据', p)
+            return player[p]
+        },
+        set(target, p, value, receiver) {
+            console.log('通过代理设置数据', p, value)
+            target[p] = value
+            return true;
+        }
+    })
+
+    playerProxy.alias++;
+
+    // 都没修改成功!!!这说明用 object.xxx object[xxx] 修改属性不支持别名
+    console.log(player.age)
+    console.log(player.alias)
+
+</script>
+</body>
+</html>
