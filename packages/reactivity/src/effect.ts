@@ -35,7 +35,7 @@ class ReactiveEffect {
                 this.parentEF = null;
 
 
-                // TODO 由于嵌套执行依赖 collectingEffect,而collectingEffect依赖属性收集,故这里不能取消属性收集!
+                // TODO 由于解决嵌套执行依赖 collectingEffect,而collectingEffect依赖属性收集,故这里不能取消属性收集!
                 // this.needCollect = false;
             }
 
