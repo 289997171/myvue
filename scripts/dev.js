@@ -6,6 +6,9 @@ const args = require('minimist')(process.argv.slice(2)) // node scripts/dev.js r
 const target = args._[0] || 'reactivity'
 const format = args.f || 'global'
 
+// 获得模块package.json
+const pkg = require(path.resolve(__dirname, `../packages/${target}/package.json`))
+
 // 使用esbuild打包
 esbuild.build({
     // 入口文件
@@ -16,6 +19,10 @@ esbuild.build({
     bundle: true,
     // 需要sourcemap
     sourcemap: true,
+    // 全局名称,也就是将模块申明一个名称,方便使用时候通过模块名称获得,
+    // var VueReactivity = (()=>{xxx})()
+    // 否则... (()=>{xxx})()  const {reactive} = VueReactivity 将无法获得!!!
+    globalName: pkg.buildOptions?.name,
     // 输入格式
     // iife 立即执行函数               (function(){})()
     // cjs node中的模块               module.exports
