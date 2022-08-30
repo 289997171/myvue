@@ -28,6 +28,8 @@
     setTimeout(()=> {
         // 响应式数据修改,会触发effect再次执行
         state.age++
+        state.age++
+        console.log('每次改变都会导致effect执行一次,共执行了2次!!!')
     }, 3000)
 
 </script>
