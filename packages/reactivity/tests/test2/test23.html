@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test2.html</title>
+</head>
+<body>
+<div id="app"></div>
+<script src="../../../../node_modules/@vue/reactivity/dist/reactivity.global.js"></script>
+<script>
+    const {effect, reactive, shallowReactive, readonly, shallowReadonly} = VueReactivity
+
+    // shallowReadonly会创建原始对象浅的代理对象,核心依赖Proxy,深层次对象不会创建代理
+    const state = shallowReadonly({
+        name: 'vicky',
+        age:30,
+        skill: {
+            java: {
+                level: 10
+            },
+            cc: {
+                level: 9
+            }
+        }
+    })
+
+    console.log(state) // Proxy
+    console.log(state.skill) // {}
+    console.log(state.skill.java) // {}
+
+    // effect函数默认会先执行一次,每当其包含的响应式数据修改后,会触发effect再次执行.这也是vue响应式的核心概念
+    effect(()=> {
+        console.log('effect...')
+        document.getElementById('app').innerHTML = `${state.name} 今年 ${state.age} 岁, java技能等级 ${state.skill.java.level}`
+    })
+
+
+    setTimeout(()=> {
+        // 修改shallowReadonly深层次对象非Proxy响应式数据,无法触发effect收集
+        // 可以正常修改值
+        state.skill.java.level++
+        console.log('state.skill.java.level', state.skill.java.level)
+    }, 3000)
+</script>
+</body>
+</html>
