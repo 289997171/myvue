@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test3.html</title>
+</head>
+<body>
+<script>
+  const player = {
+    name: 'jack',
+    age: 20
+  }
+
+  const playerProxy = new Proxy(player, {
+    get(target, p, receiver) {
+      console.log('通过代理获取数据', p)
+      return player[p]
+    },
+    set(target, p, value, receiver) {
+      console.log('通过代理设置数据', p, value)
+      target[p] = value
+      return true;
+    }
+  })
+
+  playerProxy.age++;
+
+  console.log(player.age)
+
+</script>
+</body>
+</html>
