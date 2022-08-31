@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test11.html</title>
+</head>
+<body>
+<div id="app"></div>
+<script src="https://unpkg.com/vue@3"></script>
+<script>
+    const {effect, reactive} = Vue
+
+    const state = reactive({
+        name: 'vicky',
+        age: 30,
+    })
+
+    let waiting = true
+    const runner = effect(() => {
+        console.log('effect...')
+        document.getElementById('app').innerHTML = `${state.name} 今年 ${state.age} 岁`
+    }, {
+        // 通过调度函数实现批量更新
+        scheduler() {
+            if (waiting) {
+                waiting = false
+
+                setTimeout(()=> {
+                    runner()
+                    waiting = true
+                })
+            }
+        }
+    })
+
+    state.age ++
+    state.age ++
+    state.age ++
+    state.age ++
+    // effect...  2次
+    // TODO 实现我们希望后4次只需要触发一次渲染!
+
+</script>
+</body>
+</html>
