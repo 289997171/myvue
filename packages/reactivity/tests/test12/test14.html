@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test11.html</title>
+</head>
+<body>
+<div id="app"></div>
+<script src="./reactivity.global.js"></script>
+<script>
+    const {effect, reactive} = VueReactivity
+
+    const state = reactive({
+        name: 'vicky',
+        age: 30,
+    })
+
+    const ef = effect(() => {
+        console.log('effect...')
+        document.getElementById('app').innerHTML = `${state.name} 今年 ${state.age} 岁`
+    })
+
+    // 停止
+    ef.effect.stop();
+
+    setTimeout(() => {
+        // 停止后,以前收集的属性改变也不再触发渲染
+        state.age++
+        // 但是我们可以自己执行以前的渲染函数
+        ef()
+    }, 3000)
+
+</script>
+</body>
+</html>

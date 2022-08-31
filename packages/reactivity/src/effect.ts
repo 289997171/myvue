@@ -2,6 +2,25 @@
 // 导出的是变量,相当与指针,并不是undefined值!!!
 export let collectingEffect = undefined;
 
+
+
+const cleanupEffect = (reactiveEffect)=> {
+    // TODO 解决分支渲染,收集属性依旧保存不必要的属性问题
+    // TODO 如多当前执行是因为trigger,那么会导致死循环
+    /*
+     死循环原因:
+     let set = new Set(['a])
+     set.forEach(item=> {
+        set.delete('a')
+        set.add('a')
+     })
+    */
+    for (let i = 0; i < reactiveEffect.deps.length; i++) {
+        reactiveEffect.deps[i].delete(reactiveEffect) // 这里删除后,targetP_EFs 对应的也会被删除
+    }
+    reactiveEffect.deps.length = 0;
+}
+
 class ReactiveEffect {
     // 是否需要收集对应函数中的响应式变量,默认true:需要进行收集
     needCollect = true;
@@ -27,23 +46,8 @@ class ReactiveEffect {
                 // 当前effect第一次run的时候,将其保存到全局变量中
                 collectingEffect = this;
 
-                // TODO 解决分支渲染,收集属性依旧保存不必要的属性问题
-                // TODO 如多当前执行是因为trigger,那么会导致死循环
-                /*
-                 死循环原因:
-                 let set = new Set(['a])
-                 set.forEach(item=> {
-                    set.delete('a')
-                    set.add('a')
-                 })
-                */
-                {
-                    // this.deps = [] 不能这样处理,这样仅仅是将自己的数组修改,我们需要将deps里面的set清空后,重新收集
-                    for (let i = 0; i < this.deps.length; i++) {
-                        this.deps[i].delete(this) // 这里删除后,targetP_EFs 对应的也会被删除
-                    }
-                    this.deps.length = 0;
-                }
+                // 清空之前object 属性 对当前effect的触发,以达到比如分支条件渲染删除不再依赖的属性
+                cleanupEffect(this)
 
                 // 执行对应的渲染函数,该渲染函数执行时就能获得全局的activeEffect
                 // 那么渲染函数中的响应式变量Proxy在执行get的时候也能获得全局的activeEffect,从而将响应式变量与effect进行关联
@@ -61,6 +65,15 @@ class ReactiveEffect {
         }
 
     }
+
+    stop() {
+        if (this.needCollect) {
+            // 停止收集
+            this.needCollect = false;
+            // 清空之前object 属性 对当前effect的触发
+            cleanupEffect(this)
+        }
+    }
 }
 
 /**
@@ -75,6 +88,11 @@ const effect = (renderFn) => {
 
     // 默认执行一次
     re.run()
+
+    // 返回ReactiveEffect.run函数 (run 需要 绑定 this为 re)
+    const runner = re.run.bind(re);
+    runner.effect = re;
+    return runner
 }
 
 /**
