@@ -2,53 +2,51 @@
  * options可以是一个函数|对象{get, set}
  * @param options
  */
-import {track, trigger} from "./effect";
+import {ReactiveEffect, trackDep, triggerEffects} from "./effect";
 
-const computed = (options)=> {
-    const getFn = options.get || options
-    const setFn = options.set || undefined
+class ComputedRefImpl {
+    _value;
+    effect;
+    _dirty = true;
+    __v_isReadonly = true;
+    __v_isRef = true;
+    dep = new Set();
 
-    // 先计算一次value
-    const _value = getFn()
+    constructor(public getter, public setter) {
+        // 如果有setter就不是只读
+        if (setter) this.__v_isReadonly = false
 
-    const target = {
-        // 缓存数据
-        value: _value,
-        // 脏
-        dirty: false
+        this.effect = new ReactiveEffect(getter, () => {
+            // 监听到属性变化了,触发调度器
+            if (!this._dirty) {
+                this._dirty = true
+
+                triggerEffects(this.dep)
+            }
+        })
     }
-    const proxy = new Proxy(target, {
-        get(target: any, p: string | symbol, receiver: any): any {
-            if (p === 'value') {
-                if (target.dirty) {
-                    target.value = getFn()
-                }
 
-                // 触发收集
-                track(target, 'get', p)
+    // 调用computed返回值的value,触发effect去进行属性收集,并且获得第一次执行时的结果,设置缓存
+    get value() {
 
-                return target.value
-            }
-            return null;
-        },
-        set(target: any, p: string | symbol, newValue: any, receiver: any): boolean {
-            if (setFn) {
-                // 执行set函数
-                setFn(newValue)
+        // get的时候进行属性收集
+        //track(this, 'get', 'value')
+        trackDep(this.dep)
 
-                // 标记数据已脏,需要更新
-                target.dirty = true
-
-                // 触发
-                trigger(target, 'set', p, newValue, target.value)
-
-                return true;
-            }
-            return false;
+        if (this._dirty) {
+            this._value = this.effect.run()
+            this._dirty = false
         }
-    })
+        return this._value
+    }
 
-    return proxy
+    set value(newValue) {
+        if (this.setter) this.setter(newValue)
+    }
+}
+
+const computed = (options) => {
+    return new ComputedRefImpl(options.get || options, options.set || undefined)
 }
 
 export {computed}

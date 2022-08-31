@@ -30,12 +30,12 @@ class ReactiveEffect {
     // [ef1,ef2, ...]
     deps = []
 
-    constructor(public renderFn, public scheduler) {
+    constructor(public fn /*一般是渲染函数或属性计算函数*/, public scheduler) {
     }
 
     run() {
         // 如果不需要收集,直接执行对应的渲染函数
-        if (!this.needCollect) this.renderFn()
+        if (!this.needCollect) this.fn()
         else {
             // 进行依赖收集,核心就是将当前的effect 和 稍后渲染的属性进行关联
 
@@ -51,7 +51,7 @@ class ReactiveEffect {
 
                 // 执行对应的渲染函数,该渲染函数执行时就能获得全局的activeEffect
                 // 那么渲染函数中的响应式变量Proxy在执行get的时候也能获得全局的activeEffect,从而将响应式变量与effect进行关联
-                return this.renderFn();
+                return this.fn();
             } finally {
                 collectingEffect = this.parentEF;
                 this.parentEF = null;
@@ -128,15 +128,19 @@ const track = (target, type, p) => {
         depsMap.set(p, dep = new Set())
     }
 
+    trackDep(dep)
+
+    // 打印对象被收集到的属性
+    //console.log('depsMap', depsMap)
+}
+
+const trackDep = (dep)=> {
     if (!dep.has(collectingEffect)) {
         //console.log('track...', p)
         // 双向关联,多对多
         dep.add(collectingEffect) // 注意collectingEffect之后改变不会影响dep里面的值!!!
         collectingEffect.deps.push(dep) // 让effect记录对应的dep,在之后清理的时候会用到
     }
-
-    // 打印对象被收集到的属性
-    //console.log('depsMap', depsMap)
 }
 
 
@@ -169,42 +173,46 @@ const trigger = (target, type, p, newValue, oldValue) => {
 
     const efs = pEFs.get(p)
     if (efs) {
-        //console.log('trigger...', p)
-        // 拷贝efs进行遍历,
-        // 新的_efs可能触发删除
-        // 老的 efs可能进行添加
-        const _efs = new Set<ReactiveEffect>(efs)
-        _efs.forEach(effect => {
-
-            // 考虑嵌套循环,执行effect.run可能是effect本身
-            /*
-                参见: test71.html
-                effect(()=> {
-                    console.log('effect...')
-
-                    // TODO effect中修改收到的的属性值,将导致嵌套循环!!!
-                    // set 导致 effect
-                    // effect 导致 set
-                    // ...嵌套循环
-                    state.age++
-
-                    document.getElementById('app').innerHTML = `${state.name} 今年 ${state.age} 岁`
-                })
-            */
-            if (effect === collectingEffect) console.warn('effect中修改收到的的属性值,忽略触发,直接在当前渲染函数就能生效!')
-            else {
-                if (effect.scheduler) {
-                    console.log('trigger导致effect执行::effect配置了调度器,执行调度器')
-                    effect.scheduler()
-                } else {
-                    console.log('trigger导致effect执行::执行默认run')
-                    effect.run()
-                }
-
-            }
-        })
+        triggerEffects(efs)
     }
 }
 
+const triggerEffects = (efs)=> {
+    //console.log('trigger...', p)
+    // 拷贝efs进行遍历,
+    // 新的_efs可能触发删除
+    // 老的 efs可能进行添加
+    const _efs = new Set<ReactiveEffect>(efs)
+    _efs.forEach(effect => {
 
-export {effect, track, trigger}
+        // 考虑嵌套循环,执行effect.run可能是effect本身
+        /*
+            参见: test71.html
+            effect(()=> {
+                console.log('effect...')
+
+                // TODO effect中修改收到的的属性值,将导致嵌套循环!!!
+                // set 导致 effect
+                // effect 导致 set
+                // ...嵌套循环
+                state.age++
+
+                document.getElementById('app').innerHTML = `${state.name} 今年 ${state.age} 岁`
+            })
+        */
+        if (effect === collectingEffect) console.warn('effect中修改收到的的属性值,忽略触发,直接在当前渲染函数就能生效!')
+        else {
+            if (effect.scheduler) {
+                console.log('trigger导致effect执行::effect配置了调度器,执行调度器')
+                effect.scheduler()
+            } else {
+                console.log('trigger导致effect执行::执行默认run')
+                effect.run()
+            }
+
+        }
+    })
+}
+
+
+export {effect, track, trackDep, trigger, triggerEffects, ReactiveEffect}
