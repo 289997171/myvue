@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test10.html</title>
+</head>
+<body>
+<div id="app"></div>
+<script src="./reactivity.global.js"></script>
+<script>
+  const {effect, reactive} = VueReactivity
+
+  const state = reactive({
+    flag: true,
+    name: 'vicky',
+    age:30,
+  })
+
+  effect(()=> {
+    console.log('effect...')
+    document.getElementById('app').innerHTML = state.flag ? `只显示name: ${state.name}` : `只显示age: ${state.age}`
+  })
+
+  setTimeout(()=> {
+    state.flag = false
+    console.error('查看日志可知,此时,依赖收集需要flag, name 和 age 3个属性, 但实际上我们在条件改变后,name不应该被继续收集了,因为后面条件渲染不使用name')
+  }, 3000)
+
+  /*
+     死循环原因:
+     let set = new Set(['a])
+     set.forEach(item=> {
+        set.delete('a')
+        set.add('a')
+     })
+    */
+
+</script>
+</body>
+</html>

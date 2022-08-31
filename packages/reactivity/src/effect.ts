@@ -27,6 +27,24 @@ class ReactiveEffect {
                 // 当前effect第一次run的时候,将其保存到全局变量中
                 collectingEffect = this;
 
+                // TODO 解决分支渲染,收集属性依旧保存不必要的属性问题
+                // TODO 如多当前执行是因为trigger,那么会导致死循环
+                /*
+                 死循环原因:
+                 let set = new Set(['a])
+                 set.forEach(item=> {
+                    set.delete('a')
+                    set.add('a')
+                 })
+                */
+                {
+                    // this.deps = [] 不能这样处理,这样仅仅是将自己的数组修改,我们需要将deps里面的set清空后,重新收集
+                    for (let i = 0; i < this.deps.length; i++) {
+                        this.deps[i].delete(this) // 这里删除后,targetP_EFs 对应的也会被删除
+                    }
+                    this.deps.length = 0;
+                }
+
                 // 执行对应的渲染函数,该渲染函数执行时就能获得全局的activeEffect
                 // 那么渲染函数中的响应式变量Proxy在执行get的时候也能获得全局的activeEffect,从而将响应式变量与effect进行关联
                 return this.renderFn();
