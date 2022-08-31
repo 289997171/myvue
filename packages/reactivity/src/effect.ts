@@ -30,7 +30,7 @@ class ReactiveEffect {
     // [ef1,ef2, ...]
     deps = []
 
-    constructor(public renderFn) {
+    constructor(public renderFn, public scheduler) {
     }
 
     run() {
@@ -82,9 +82,9 @@ class ReactiveEffect {
  * 每当收集的响应式变量改变,触发effect对应的函数重新执行
  * @param renderFn 渲染函数
  */
-const effect = (renderFn) => {
+const effect = (renderFn, options: any = {}) => {
 
-    const re = new ReactiveEffect(renderFn)
+    const re = new ReactiveEffect(renderFn, options.scheduler)
 
     // 默认执行一次
     re.run()
@@ -129,14 +129,14 @@ const track = (target, type, p) => {
     }
 
     if (!dep.has(collectingEffect)) {
-        console.log('track...', p)
+        //console.log('track...', p)
         // 双向关联,多对多
         dep.add(collectingEffect) // 注意collectingEffect之后改变不会影响dep里面的值!!!
         collectingEffect.deps.push(dep) // 让effect记录对应的dep,在之后清理的时候会用到
     }
 
     // 打印对象被收集到的属性
-    console.log('depsMap', depsMap)
+    //console.log('depsMap', depsMap)
 }
 
 
@@ -169,7 +169,7 @@ const trigger = (target, type, p, newValue, oldValue) => {
 
     const efs = pEFs.get(p)
     if (efs) {
-        console.log('trigger...', p)
+        //console.log('trigger...', p)
         // 拷贝efs进行遍历,
         // 新的_efs可能触发删除
         // 老的 efs可能进行添加
@@ -192,7 +192,16 @@ const trigger = (target, type, p, newValue, oldValue) => {
                 })
             */
             if (effect === collectingEffect) console.warn('effect中修改收到的的属性值,忽略触发,直接在当前渲染函数就能生效!')
-            else effect.run()
+            else {
+                if (effect.scheduler) {
+                    console.log('trigger导致effect执行::effect配置了调度器,执行调度器')
+                    effect.scheduler()
+                } else {
+                    console.log('trigger导致effect执行::执行默认run')
+                    effect.run()
+                }
+
+            }
         })
     }
 }
