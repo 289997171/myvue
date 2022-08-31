@@ -152,7 +152,11 @@ const trigger = (target, type, p, newValue, oldValue) => {
     const efs = pEFs.get(p)
     if (efs) {
         console.log('trigger...', p)
-        efs.forEach(effect => {
+        // 拷贝efs进行遍历,
+        // 新的_efs可能触发删除
+        // 老的 efs可能进行添加
+        const _efs = new Set<ReactiveEffect>(efs)
+        _efs.forEach(effect => {
 
             // 考虑嵌套循环,执行effect.run可能是effect本身
             /*
