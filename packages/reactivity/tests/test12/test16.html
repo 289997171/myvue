@@ -6,9 +6,9 @@
 </head>
 <body>
 <div id="app"></div>
-<script src="./reactivity.global.js"></script>
+<script src="https://unpkg.com/vue@3"></script>
 <script>
-    const {effect, reactive} = VueReactivity
+    const {effect, reactive} = Vue
 
     const state = reactive({
         name: 'vicky',
@@ -18,17 +18,20 @@
     const runner = effect(() => {
         console.log('effect...')
         document.getElementById('app').innerHTML = `${state.name} 今年 ${state.age} 岁`
+    },
+    {
+        scheduler() { // 调度器,添加后,effect中渲染函数将不执行自己处理了
+            console.log('scheduler...')
+
+            // 如何更新自己决定,比如:3秒后才更新
+            setTimeout(()=> {
+                runner()
+            }, 3000)
+        }
     })
 
-    // 停止
-    runner.effect.stop();
+    state.age ++
 
-    setTimeout(() => {
-        // 停止后,以前收集的属性改变也不再触发渲染
-        state.age++
-        // 但是我们可以自己执行以前的渲染函数
-        runner()
-    }, 3000)
 
 </script>
 </body>
