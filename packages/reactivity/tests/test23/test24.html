@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test24.html</title>
+</head>
+<body>
+<div id="app"></div>
+<script src="./reactivity.global.js"></script>
+
+<script>
+    // reactive只支持对象
+    // ref支持基础数据类型,让普通值变成响应式,核心逻辑同reactive,只是将基础值包装到一个对象中,然后按reactive方式处理即可
+    const {effect, ref} = VueReactivity
+
+    const age = ref(30)
+
+    effect(()=> {
+        console.log('effect...')
+        document.getElementById('app').innerHTML = `age = ${age.value}`
+    })
+
+    age.value++
+    age.value++
+
+</script>
+</body>
+</html>
