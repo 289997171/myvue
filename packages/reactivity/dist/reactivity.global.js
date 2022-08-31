@@ -22,6 +22,7 @@ var VueReactivity = (() => {
   __export(src_exports, {
     computed: () => computed,
     effect: () => effect,
+    proxyRefs: () => proxyRefs,
     reactive: () => reactive,
     ref: () => ref,
     toRef: () => toRef,
@@ -302,6 +303,23 @@ var VueReactivity = (() => {
       result[p] = toRef(proxy, p);
     }
     return result;
+  };
+  var proxyRefs = (target) => {
+    return new Proxy(target, {
+      get(target2, p, receiver) {
+        let result = Reflect.get(target2, p, receiver);
+        return result.__v_isRef ? result.value : result;
+      },
+      set(target2, p, newValue, receiver) {
+        const oldValue = target2[p];
+        if (oldValue.__v_isRef) {
+          oldValue.value = newValue;
+          return true;
+        } else {
+          return Reflect.set(target2, p, newValue, receiver);
+        }
+      }
+    });
   };
   return __toCommonJS(src_exports);
 })();

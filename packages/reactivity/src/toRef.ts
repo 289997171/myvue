@@ -35,4 +35,22 @@ const toRefs = (proxy) => {
     return result
 }
 
-export {toRef, toRefs}
+const proxyRefs = (target)=> {
+    return new Proxy(target,{
+        get(target: any, p: string | symbol, receiver: any): any {
+            let result = Reflect.get(target, p, receiver)
+            return result.__v_isRef ? result.value : result;
+        },
+        set(target: any, p: string | symbol, newValue: any, receiver: any): boolean {
+            const oldValue = target[p]
+            if (oldValue.__v_isRef) {
+                oldValue.value = newValue
+                return true;
+            } else {
+                return Reflect.set(target, p, newValue, receiver)
+            }
+        }
+    })
+}
+
+export {toRef, toRefs, proxyRefs}
