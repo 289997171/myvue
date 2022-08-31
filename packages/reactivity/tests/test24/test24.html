@@ -24,6 +24,9 @@
     // age = 30
     // name并不是state.name 虽然值相同,但结构的值不具备响应式功能
     let {name, age} = state
+    // 等价于
+    // let name = state.name
+    // let age = state.age
 
     effect(()=> {
         console.log('effect...')
