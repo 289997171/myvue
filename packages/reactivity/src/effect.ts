@@ -36,6 +36,7 @@ class ReactiveEffect {
 
 
                 // TODO 由于解决嵌套执行依赖 collectingEffect,而collectingEffect依赖属性收集,故这里不能取消属性收集!
+                // TODO 由于条件渲染,如果effect只在第一次执行的时候收集依赖,也不能达到效果,故这里不能取消属性收集!
                 // this.needCollect = false;
             }
 
@@ -97,6 +98,9 @@ const track = (target, type, p) => {
         dep.add(collectingEffect) // 注意collectingEffect之后改变不会影响dep里面的值!!!
         collectingEffect.deps.push(dep) // 让effect记录对应的dep,在之后清理的时候会用到
     }
+
+    // 打印对象被收集到的属性
+    console.log('depsMap', depsMap)
 }
 
 
@@ -147,7 +151,7 @@ const trigger = (target, type, p, newValue, oldValue) => {
                     document.getElementById('app').innerHTML = `${state.name} 今年 ${state.age} 岁`
                 })
             */
-            if (effect == collectingEffect) console.warn('effect中修改收到的的属性值,忽略触发,直接在当前渲染函数就能生效!')
+            if (effect === collectingEffect) console.warn('effect中修改收到的的属性值,忽略触发,直接在当前渲染函数就能生效!')
             else effect.run()
         })
     }
