@@ -181,8 +181,8 @@ var VueReactivity = (() => {
     get value() {
       trackDep(this.dep);
       if (this._dirty) {
-        this._value = this.effect.run();
         this._dirty = false;
+        this._value = this.effect.run();
       }
       return this._value;
     }
