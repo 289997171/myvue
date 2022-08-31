@@ -40,7 +40,7 @@ const reactive = (target)=> {
 
             let result = Reflect.get(target, p, receiver)
             if (isObject(result)) {
-                return reactive(result) // 实现深层代理
+                return reactive(result) // 实现深层代理,而且深层代理是当深层对象有取值操作的时候才创建对应的代理对象,性能更好!
             }
 
             return result;
