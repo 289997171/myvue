@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test14.html</title>
+</head>
+<body>
+<div id="app"></div>
+<script src="https://unpkg.com/vue@3"></script>
+
+<script>
+    const {effect, reactive, computed} = Vue // VueReactivity
+
+    // reactive会创建原始对象的代理对象,核心依赖Proxy,深层次的,深层次的对象也会创建对应的代理对象Proxy
+    const state = reactive({
+        firstName: '张',
+        lastName: '三'
+    })
+
+    // 计算属性,如果不考虑set的清空,可以只传递get函数
+    const fullName = computed(()=>{
+            console.log('get')
+            return state.firstName + state.lastName
+    })
+
+    console.log(fullName.value)
+    console.log(fullName.value)
+    console.log(fullName.value)
+
+</script>
+</body>
+</html>
