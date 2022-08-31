@@ -28,10 +28,18 @@
 
 
     let timer = 5000;
-    watch(() => state.input,  (newValue, oldValue) => {
+    watch(() => state.input,  (newValue, oldValue, onCleanup) => {
         console.log('监听到数据变化', newValue, oldValue)
+
+        let clear = false
+        onCleanup(()=> {
+            console.log('后面又修改了数据')
+            clear = true;
+        })
+
         getData(newValue, timer).then((res)=> {
-            document.getElementById('app').innerHTML = `result: ${res}`
+            if (!clear)
+                document.getElementById('app').innerHTML = `result: ${res}`
         })
         timer -= 2000 // 模拟第2次请求比第一次请求快2秒返回
     })
@@ -44,7 +52,7 @@
         state.input = '第二次' // 模拟后搜索 '第二次'
     }, 1000)
 
-    console.error('先显示第二次结果,然后最终还是显示第一次的查询结果,因为第一次的请求后返回')
+    console.error('在后面数据修改后,可以触发之前的watch回调onCleanup')
 
 </script>
 </body>

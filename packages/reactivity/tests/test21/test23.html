@@ -28,12 +28,19 @@
 
 
     let timer = 5000;
-    watch(() => state.input,  (newValue, oldValue) => {
+    watch(() => state.input,  async (newValue, oldValue, onCleanup) => {
         console.log('监听到数据变化', newValue, oldValue)
-        getData(newValue, timer).then((res)=> {
-            document.getElementById('app').innerHTML = `result: ${res}`
+
+        let clear = false
+        onCleanup(()=> {
+            console.log('后面又修改了数据')
+            clear = true;
         })
-        timer -= 2000 // 模拟第2次请求比第一次请求快2秒返回
+
+        timer -= 1000
+        const res = await getData(newValue, timer)
+        document.getElementById('app').innerHTML = `result: ${res}`
+
     })
 
     // 实际上,我们网络请求都希望以最后一次请求结果为准,但这里却最终渲染的是5000.
@@ -44,7 +51,7 @@
         state.input = '第二次' // 模拟后搜索 '第二次'
     }, 1000)
 
-    console.error('先显示第二次结果,然后最终还是显示第一次的查询结果,因为第一次的请求后返回')
+    console.error('在后面数据修改后,可以触发之前的watch回调onCleanup')
 
 </script>
 </body>
