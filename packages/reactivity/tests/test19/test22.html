@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test19.html</title>
+</head>
+<body>
+<div id="app"></div>
+<script src="https://unpkg.com/vue@3"></script>
+
+<script>
+    const {reactive, watch} = Vue // VueReactivity
+
+    const state = reactive({
+        age: 30,
+        java: {
+            level: 8
+        }
+    })
+
+    watch(()=>state.java.level/*state.java.level 错误的写法*/, (newValue, oldValue)=> {
+        console.log(newValue, oldValue) // 9 8
+        console.error('测试具体监控2')
+    })
+
+    setTimeout(()=> {
+        state.java.level++
+    }, 3000)
+</script>
+</body>
+</html>
