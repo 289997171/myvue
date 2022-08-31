@@ -49,7 +49,7 @@
     state.input = '第一次' // 模拟先搜索 '第一次'
     setTimeout(()=> {
         state.input = '第二次' // 模拟后搜索 '第二次'
-    }, 1000)
+    }, 500)
 
     console.error('在后面数据修改后,可以触发之前的watch回调onCleanup')
 
