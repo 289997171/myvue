@@ -38,7 +38,12 @@ const reactive = (target)=> {
             // 进行依赖收集
             track(target, 'get', p)
 
-            return Reflect.get(target, p, receiver);
+            let result = Reflect.get(target, p, receiver)
+            if (isObject(result)) {
+                return reactive(result) // 实现深层代理
+            }
+
+            return result;
         },
         set(target: any, p: string | symbol, value: any, receiver: any): boolean {
             // target[p] = value;
