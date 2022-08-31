@@ -135,6 +135,7 @@ const track = (target, type, p) => {
 }
 
 const trackDep = (dep)=> {
+    if (!collectingEffect) return;
     if (!dep.has(collectingEffect)) {
         //console.log('track...', p)
         // 双向关联,多对多
