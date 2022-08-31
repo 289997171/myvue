@@ -46,10 +46,11 @@ const reactive = (target)=> {
 
             let result = false;
 
-            // 触发属性导致effect渲染
             const oldValue = target[p]
-            if (oldValue !== value) {
+            if (oldValue !== value) { // 数据变化才更新
                 result = Reflect.set(target, p, value, receiver)
+
+                // 触发属性导致effect渲染
                 trigger(target, 'set', p, value, oldValue)
             }
 
