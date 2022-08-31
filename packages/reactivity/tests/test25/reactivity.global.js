@@ -1,0 +1,326 @@
+var VueReactivity = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+  // packages/reactivity/src/index.ts
+  var src_exports = {};
+  __export(src_exports, {
+    computed: () => computed,
+    effect: () => effect,
+    proxyRefs: () => proxyRefs,
+    reactive: () => reactive,
+    ref: () => ref,
+    toRef: () => toRef,
+    toRefs: () => toRefs,
+    watch: () => watch
+  });
+
+  // packages/shared/src/index.ts
+  var isObject = (val) => {
+    return val !== null && typeof val === "object";
+  };
+  var isFunction = (val) => {
+    return typeof val === "function";
+  };
+  var isArray = Array.isArray;
+
+  // packages/reactivity/src/effect.ts
+  var collectingEffect = void 0;
+  var cleanupEffect = (reactiveEffect) => {
+    for (let i = 0; i < reactiveEffect.deps.length; i++) {
+      reactiveEffect.deps[i].delete(reactiveEffect);
+    }
+    reactiveEffect.deps.length = 0;
+  };
+  var ReactiveEffect = class {
+    constructor(fn, scheduler) {
+      this.fn = fn;
+      this.scheduler = scheduler;
+      this.needCollect = true;
+      this.parentEF = void 0;
+      this.deps = [];
+    }
+    run() {
+      if (!this.needCollect)
+        this.fn();
+      else {
+        try {
+          this.parentEF = collectingEffect;
+          collectingEffect = this;
+          cleanupEffect(this);
+          return this.fn();
+        } finally {
+          collectingEffect = this.parentEF;
+          this.parentEF = null;
+        }
+      }
+    }
+    stop() {
+      if (this.needCollect) {
+        this.needCollect = false;
+        cleanupEffect(this);
+      }
+    }
+  };
+  var effect = (renderFn, options = {}) => {
+    const re = new ReactiveEffect(renderFn, options.scheduler);
+    re.run();
+    const runner = re.run.bind(re);
+    runner.effect = re;
+    return runner;
+  };
+  var targetP_EFs = /* @__PURE__ */ new WeakMap();
+  var track = (target, type, p) => {
+    if (!collectingEffect) {
+      return;
+    }
+    let depsMap = targetP_EFs.get(target);
+    if (!depsMap) {
+      targetP_EFs.set(target, depsMap = /* @__PURE__ */ new Map());
+    }
+    let dep = depsMap.get(p);
+    if (!dep) {
+      depsMap.set(p, dep = /* @__PURE__ */ new Set());
+    }
+    trackDep(dep);
+  };
+  var trackDep = (dep) => {
+    if (!collectingEffect)
+      return;
+    if (!dep.has(collectingEffect)) {
+      dep.add(collectingEffect);
+      collectingEffect.deps.push(dep);
+    }
+  };
+  var trigger = (target, type, p, newValue, oldValue) => {
+    const pEFs = targetP_EFs.get(target);
+    if (!pEFs)
+      return;
+    const efs = pEFs.get(p);
+    if (efs) {
+      triggerEffects(efs);
+    }
+  };
+  var triggerEffects = (efs) => {
+    const _efs = new Set(efs);
+    _efs.forEach((effect2) => {
+      if (effect2 === collectingEffect)
+        console.warn("effect\u4E2D\u4FEE\u6539\u6536\u5230\u7684\u7684\u5C5E\u6027\u503C,\u5FFD\u7565\u89E6\u53D1,\u76F4\u63A5\u5728\u5F53\u524D\u6E32\u67D3\u51FD\u6570\u5C31\u80FD\u751F\u6548!");
+      else {
+        if (effect2.scheduler) {
+          console.log("trigger\u5BFC\u81F4effect\u6267\u884C::effect\u914D\u7F6E\u4E86\u8C03\u5EA6\u5668,\u6267\u884C\u8C03\u5EA6\u5668");
+          effect2.scheduler();
+        } else {
+          console.log("trigger\u5BFC\u81F4effect\u6267\u884C::\u6267\u884C\u9ED8\u8BA4run");
+          effect2.run();
+        }
+      }
+    });
+  };
+
+  // packages/reactivity/src/reactive.ts
+  var reactiveMap = /* @__PURE__ */ new WeakMap();
+  var reactive = (target) => {
+    if (!isObject(target)) {
+      console.error("reactive\u53EA\u652F\u6301\u5BF9\u8C61\u7684\u8F6C\u6362:", target);
+      return;
+    }
+    if (target["__v_isReactive" /* IS_REACTIVE */])
+      return target;
+    let proxy = reactiveMap.get(target);
+    if (proxy)
+      return proxy;
+    proxy = new Proxy(target, {
+      get(target2, p, receiver) {
+        if (p === "__v_isReactive" /* IS_REACTIVE */)
+          return true;
+        track(target2, "get", p);
+        let result = Reflect.get(target2, p, receiver);
+        if (isObject(result)) {
+          return reactive(result);
+        }
+        return result;
+      },
+      set(target2, p, value, receiver) {
+        let result = false;
+        const oldValue = target2[p];
+        if (oldValue !== value) {
+          result = Reflect.set(target2, p, value, receiver);
+          trigger(target2, "set", p, value, oldValue);
+        }
+        return result;
+      }
+    });
+    reactiveMap.set(target, proxy);
+    return proxy;
+  };
+  var isReactive = (target) => {
+    return !!(target && target["__v_isReactive" /* IS_REACTIVE */]);
+  };
+
+  // packages/reactivity/src/computed.ts
+  var ComputedRefImpl = class {
+    constructor(getter, setter) {
+      this.getter = getter;
+      this.setter = setter;
+      this._dirty = true;
+      this.__v_isReadonly = true;
+      this.__v_isRef = true;
+      this.dep = /* @__PURE__ */ new Set();
+      if (setter)
+        this.__v_isReadonly = false;
+      this.effect = new ReactiveEffect(getter, () => {
+        if (!this._dirty) {
+          this._dirty = true;
+          triggerEffects(this.dep);
+        }
+      });
+    }
+    get value() {
+      trackDep(this.dep);
+      if (this._dirty) {
+        this._dirty = false;
+        this._value = this.effect.run();
+      }
+      return this._value;
+    }
+    set value(newValue) {
+      if (this.setter)
+        this.setter(newValue);
+    }
+  };
+  var computed = (options) => {
+    return new ComputedRefImpl(options.get || options, options.set || void 0);
+  };
+
+  // packages/reactivity/src/watch.ts
+  var traversal = (target, set = /* @__PURE__ */ new Set()) => {
+    if (!isObject(target))
+      return target;
+    if (set.has(target))
+      return target;
+    set.add(target);
+    for (let p in target) {
+      traversal(target[p], set);
+    }
+    return target;
+  };
+  var watch = (target, cb) => {
+    let getter;
+    if (isReactive(target)) {
+      getter = () => {
+        return traversal(target);
+      };
+    } else if (isFunction(target)) {
+      getter = target;
+    } else {
+      console.error("watch\u9700\u8981\u54CD\u5E94\u5F0F\u5BF9\u8C61|getter\u51FD\u6570");
+      return;
+    }
+    let cleanupHandle;
+    const onCleanup = (_cleanupHandle) => {
+      cleanupHandle = _cleanupHandle;
+    };
+    let oldValue;
+    const job = () => {
+      if (cleanupHandle)
+        cleanupHandle();
+      const newValue = effect2.run();
+      cb(newValue, oldValue, onCleanup);
+      oldValue = newValue;
+    };
+    const effect2 = new ReactiveEffect(getter, job);
+    oldValue = effect2.run();
+  };
+
+  // packages/reactivity/src/ref.ts
+  var RefImpl = class {
+    constructor(rawValue) {
+      this.rawValue = rawValue;
+      this.dep = /* @__PURE__ */ new Set();
+      this.__v_isRef = true;
+      this._value = toReactive(rawValue);
+    }
+    get value() {
+      trackDep(this.dep);
+      return this._value;
+    }
+    set value(val) {
+      if (this.rawValue !== val) {
+        this.rawValue = val;
+        this._value = toReactive(val);
+        triggerEffects(this.dep);
+      }
+    }
+  };
+  var toReactive = (val) => {
+    return isObject(val) ? reactive(val) : val;
+  };
+  var ref = (val) => {
+    return new RefImpl(val);
+  };
+
+  // packages/reactivity/src/toRef.ts
+  var ObjectRefImpl = class {
+    constructor(_object, _key) {
+      this._object = _object;
+      this._key = _key;
+      this.__v_isRef = true;
+      this._defaultValue = void 0;
+    }
+    get value() {
+      return this._object[this._key];
+    }
+    set value(val) {
+      this._object[this._key] = val;
+    }
+  };
+  var toRef = (target, p) => {
+    return new ObjectRefImpl(target, p);
+  };
+  var toRefs = (proxy) => {
+    if (!isReactive(proxy)) {
+      console.error("toRefs \u53C2\u6570\u9700\u8981\u662Freactive");
+      return;
+    }
+    const result = isArray(proxy) ? new Array(proxy.length) : {};
+    for (let p in proxy) {
+      result[p] = toRef(proxy, p);
+    }
+    return result;
+  };
+  var proxyRefs = (target) => {
+    return new Proxy(target, {
+      get(target2, p, receiver) {
+        let result = Reflect.get(target2, p, receiver);
+        return result.__v_isRef ? result.value : result;
+      },
+      set(target2, p, newValue, receiver) {
+        const oldValue = target2[p];
+        if (oldValue.__v_isRef) {
+          oldValue.value = newValue;
+          return true;
+        } else {
+          return Reflect.set(target2, p, newValue, receiver);
+        }
+      }
+    });
+  };
+  return __toCommonJS(src_exports);
+})();
+//# sourceMappingURL=reactivity.global.js.map
