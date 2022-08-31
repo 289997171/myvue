@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test14.html</title>
+</head>
+<body>
+<div id="app"></div>
+<script src="../../dist/reactivity.global.js"></script>
+
+<script>
+    const {effect, reactive} = VueReactivity
+
+    // reactive会创建原始对象的代理对象,核心依赖Proxy,深层次的,深层次的对象也会创建对应的代理对象Proxy
+    const state = reactive({
+        name: 'vicky',
+        age:30,
+        skill: {
+            level: 8
+        }
+    })
+
+    console.log(state) // Proxy
+    console.log(state.skill) // Object
+
+    effect(()=> {
+        console.log('effect...')
+        document.getElementById('app').innerHTML = `${state.name} 今年 ${state.age} 岁 skill: ${state.skill.level}`
+    })
+
+    setTimeout(()=> {
+        state.skill.level++
+    }, 3000)
+
+</script>
+</body>
+</html>
