@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test21.html</title>
+</head>
+<body>
+<div id="app"></div>
+<script src="https://unpkg.com/vue@3"></script>
+
+<script>
+    const {reactive, effect, watch} = Vue // VueReactivity
+
+    const state = reactive({
+        cost: 0
+    })
+
+    watch(()=>state.cost, (newValue, oldValue)=> {
+        document.getElementById('app').innerHTML = `cost: ${newValue}`
+    })
+
+    // 模拟网络请求,异步返回数据
+    const getData = (k, timer) => {
+        return new Promise(() => {
+            setTimeout(() => {
+                // 获得网络返回数据,修改数据
+                state.cost = k
+            }, timer)
+        })
+    }
+
+    getData('第一次', 3000) // 第一个请求需要3s
+    getData('第二次', 1000) // 第二个请求需要1s
+
+    // 实际上,我们网络请求都希望以最后一次请求结果为准,但这里却最终渲染的是5000.
+    // 比如:搜索框输入 '第一次',然后又输入 '第二次', 我们希望最终显示的结果肯定是 '第二次' 的结果,但有可能 '第一次' 的请求比 '第二次'晚返回,导致最终渲染的是 '第一次'
+
+</script>
+</body>
+</html>
