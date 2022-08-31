@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test25.html</title>
+</head>
+<body>
+<div id="app"></div>
+<script src="https://unpkg.com/vue@3"></script>
+
+<script>
+    // reactive只支持对象
+    // ref支持基础数据类型,让普通值变成响应式,核心逻辑同reactive,只是将基础值包装到一个对象中,然后按reactive方式处理即可
+    const {effect, ref, proxyRefs} = Vue // VueReactivity
+
+    const name = ref('vicky')
+    const age = ref(30)
+
+    const _ctx = proxyRefs({name, age})
+
+    effect(()=> {
+        console.log('effect...')
+
+        // 使用with包裹
+        with (_ctx) {
+            document.getElementById('app').innerHTML = `${name} 今年 ${age} 岁`
+        }
+
+    })
+
+</script>
+</body>
+</html>
