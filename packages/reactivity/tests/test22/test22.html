@@ -6,10 +6,10 @@
 </head>
 <body>
 <div id="app"></div>
-<script src="https://unpkg.com/vue@3"></script>
+<script src="../../dist/reactivity.global.js"></script>
 
 <script>
-    const {reactive, effect, watch} = Vue // VueReactivity
+    const {reactive, effect, watch} = VueReactivity
 
     const state = reactive({
         input: ''
@@ -28,7 +28,7 @@
 
 
     let timer = 5000;
-    watch(() => state.input,  async (newValue, oldValue, onCleanup) => {
+    watch(() => state.input,  (newValue, oldValue, onCleanup) => {
         console.log('监听到数据变化', newValue, oldValue)
 
         let clear = false
@@ -37,10 +37,11 @@
             clear = true;
         })
 
-        timer -= 1000
-        const res = await getData(newValue, timer)
-        if (!clear) document.getElementById('app').innerHTML = `result: ${res}`
-
+        getData(newValue, timer).then((res)=> {
+            if (!clear)
+                document.getElementById('app').innerHTML = `result: ${res}`
+        })
+        timer -= 2000 // 模拟第2次请求比第一次请求快2秒返回
     })
 
     // 实际上,我们网络请求都希望以最后一次请求结果为准,但这里却最终渲染的是5000.
@@ -49,7 +50,7 @@
     state.input = '第一次' // 模拟先搜索 '第一次'
     setTimeout(()=> {
         state.input = '第二次' // 模拟后搜索 '第二次'
-    }, 500)
+    }, 1000)
 
     console.error('在后面数据修改后,可以触发之前的watch回调onCleanup')
 

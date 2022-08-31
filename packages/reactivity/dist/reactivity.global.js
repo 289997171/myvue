@@ -228,10 +228,16 @@ var VueReactivity = (() => {
       console.error("watch\u9700\u8981\u54CD\u5E94\u5F0F\u5BF9\u8C61|getter\u51FD\u6570");
       return;
     }
+    let cleanupHandle;
+    const onCleanup = (_cleanupHandle) => {
+      cleanupHandle = _cleanupHandle;
+    };
     let oldValue;
     const job = () => {
+      if (cleanupHandle)
+        cleanupHandle();
       const newValue = effect2.run();
-      cb(newValue, oldValue);
+      cb(newValue, oldValue, onCleanup);
       oldValue = newValue;
     };
     const effect2 = new ReactiveEffect(getter, job);

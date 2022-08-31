@@ -36,10 +36,17 @@ const watch = (target, cb) => {
         return
     }
 
+    let cleanupHandle;
+    const onCleanup = (_cleanupHandle)=> {
+        cleanupHandle = _cleanupHandle
+    }
+
     let oldValue;
     const job = ()=> {
+        if (cleanupHandle) cleanupHandle() // 下一次watch开始触发上衣次watch的cleanup
+
         const newValue = effect.run()
-        cb(newValue, oldValue)
+        cb(newValue, oldValue, onCleanup)
         oldValue = newValue;
     }
 
