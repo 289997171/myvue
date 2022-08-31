@@ -68,4 +68,8 @@ const reactive = (target)=> {
     return proxy
 }
 
-export {reactive}
+const isReactive = (target)=> {
+    return !!(target && target[ReactiveFlag.IS_REACTIVE])
+}
+
+export {reactive, isReactive}
