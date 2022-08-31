@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test24.html</title>
+</head>
+<body>
+<div id="app"></div>
+<script src="https://unpkg.com/vue@3"></script>
+
+<script>
+    // reactive只支持对象
+    // ref支持基础数据类型,让普通值变成响应式,核心逻辑同reactive,只是将基础值包装到一个对象中,然后按reactive方式处理即可
+    const {effect, reactive} = Vue // VueReactivity
+
+    const state = reactive({
+        name: 'vicky',
+        age: 30
+    })
+
+    // 注意,结构数据
+    // 这里表示,创建2个变量
+    // name = 'vicky'
+    // age = 30
+    // name并不是state.name 虽然值相同,但结构的值不具备响应式功能
+    let {name, age} = state
+
+    effect(()=> {
+        console.log('effect...')
+        document.getElementById('app').innerHTML = `${state.name} 今年 ${state.age} 岁`
+    })
+
+    setTimeout(()=> {
+        name = 'jack';
+        age ++;
+        console.error('结构定义的变量不具备响应式')
+        console.log('name', name)
+        console.log('state.name', state.name)
+        console.log('age', age)
+        console.log('state.age', state.age)
+    }, 1000)
+
+
+</script>
+</body>
+</html>
