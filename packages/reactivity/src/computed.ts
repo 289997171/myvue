@@ -20,7 +20,7 @@ class ComputedRefImpl {
             // 监听到属性变化了,触发调度器
             if (!this._dirty) {
                 this._dirty = true
-
+                //trigger(this, 'set', 'value', null, null)
                 triggerEffects(this.dep)
             }
         })
@@ -34,8 +34,8 @@ class ComputedRefImpl {
         trackDep(this.dep)
 
         if (this._dirty) {
-            this._value = this.effect.run()
             this._dirty = false
+            this._value = this.effect.run()
         }
         return this._value
     }
