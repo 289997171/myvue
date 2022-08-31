@@ -2,8 +2,7 @@
  * options可以是一个函数|对象{get, set}
  * @param options
  */
-import {reactive} from "./reactive";
-import {effect, track, trigger} from "./effect";
+import {track, trigger} from "./effect";
 
 const computed = (options)=> {
     const getFn = options.get || options
